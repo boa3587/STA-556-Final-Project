@@ -45,7 +45,7 @@ The first run of `notebooks/01_data_processing.ipynb` downloads the data and sav
 │   ├── clean.py                  # validation, long-to-wide reshape, missingness
 │   └── analysis.py               # summaries, least squares (NumPy), bootstrap
 ├── data/
-│   ├── raw/                      # API snapshot + provenance (never edited by hand)
+│   ├── raw/                      # API snapshot + provenance 
 │   └── processed/                # county_analysis.csv: one row per county
 └── figures/                      # all figures, saved by 02_analysis.ipynb
 ```
