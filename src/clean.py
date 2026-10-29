@@ -55,13 +55,16 @@ def tidy_places(df: pd.DataFrame, measures: list[str]) -> pd.DataFrame:
     out["totalpopulation"] = pd.to_numeric(
         out["totalpopulation"].astype(str).str.replace(",", ""), errors="coerce")
 
-    wide = out.pivot_table(index=["locationid", "stateabbr", "locationname"],
-                           columns="measureid", values="data_value",
-                           aggfunc="first").reset_index()
+    # One row per county with its identifiers. Pivoting on locationid alone and
+    # joining back keeps every county, even one whose name is blank or whose
+    # values are all missing (pivot_table would silently drop those rows).
+    ids = out.groupby("locationid")[["stateabbr", "locationname", "totalpopulation"]].first()
+    values = (out.pivot_table(index="locationid", columns="measureid",
+                              values="data_value", aggfunc="first")
+                 .reindex(columns=measures))
+    wide = ids.join(values, how="left").reset_index()
     wide.columns.name = None
-
-    pop = out.groupby("locationid")["totalpopulation"].first()
-    wide["totalpopulation"] = wide["locationid"].map(pop)
+    wide = wide[["locationid", "stateabbr", "locationname"] + measures + ["totalpopulation"]]
     return wide.rename(columns={m: m.lower() for m in measures})
 
 

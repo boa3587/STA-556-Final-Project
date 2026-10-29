@@ -101,6 +101,8 @@ Multiple linear regression of diabetes prevalence on physical inactivity, obesit
 |---|---|
 | `figures/eda_histograms.png` | Distribution of each measure across counties |
 | `figures/eda_scatter.png` | Diabetes against each predictor |
+| `figures/eda_pairplot.png` | Pair plot of all four measures (seaborn) |
+| `figures/corr_heatmap.png` | Correlation heatmap (seaborn) |
 | `figures/diagnostics.png` | Residuals vs fitted, normal Q-Q plot |
 | `figures/bootstrap_lpa.png` | Bootstrap distribution of the physical-inactivity coefficient |
 | `figures/communication_figure.png` | Main result |

@@ -1,0 +1,12 @@
+{
+  "source": "CDC PLACES: Local Data for Better Health, County Data, 2025 release",
+  "dataset_id": "swc5-untb",
+  "endpoint": "https://data.cdc.gov/resource/swc5-untb.json",
+  "query_parameters": {
+    "$where": "measureid in('DIABETES','LPA','OBESITY','CSMOKING') AND data_value_type='Age-adjusted prevalence'",
+    "$order": ":id"
+  },
+  "retrieved_utc": "2026-10-29T09:36:10+00:00",
+  "n_rows": 11832,
+  "file": "places_county_2025.csv"
+}
