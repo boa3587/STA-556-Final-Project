@@ -13,7 +13,7 @@ Across US counties, how strongly is the prevalence of physical inactivity associ
 | **Source** | CDC [PLACES: Local Data for Better Health](https://www.cdc.gov/places/), County Data, 2025 release. Public domain. |
 | **Dataset ID** | `swc5-untb` on data.cdc.gov |
 | **Access** | Socrata Open Data API (SODA): `https://data.cdc.gov/resource/swc5-untb.json`. No API key is needed. |
-| **Unit of observation** | A US county (50 states + DC) |
+| **Unit of observation** | A US county in 48 states + DC (Kentucky and Pennsylvania have no estimates for these measures in the 2025 release) |
 | **Measure type** | Age-adjusted prevalence (% of adults) |
 
 | Variable | PLACES measure ID | Meaning | Role |
@@ -45,7 +45,7 @@ The first run of `notebooks/01_data_processing.ipynb` downloads the data and sav
 │   ├── clean.py                  # validation, long-to-wide reshape, missingness
 │   └── analysis.py               # summaries, least squares (NumPy), bootstrap
 ├── data/
-│   ├── raw/                      # API snapshot + provenance 
+│   ├── raw/                      # API snapshot + provenance (never edited by hand)
 │   └── processed/                # county_analysis.csv: one row per county
 └── figures/                      # all figures, saved by 02_analysis.ipynb
 ```
@@ -87,8 +87,8 @@ Steps 1–4 are carried out and documented in `notebooks/01_data_processing.ipyn
 
 1. **Download** (`src/fetch.py::fetch_places`): page through the API, save the raw rows and a provenance record.
 2. **Validate** (`src/clean.py::validate_raw`): required columns present, all four measures returned, no duplicate county × measure rows, prevalences in [0, 100].
-3. **Filter and reshape** (`tidy_places`): keep the 50 states + DC, convert text to numbers, and pivot from one row per county per measure (long) to one row per county (wide).
-4. **Missingness** (`missingness_report`, `drop_incomplete`): report how many values are missing and where, then use complete cases.
+3. **Filter and reshape** (`tidy_places`): remove the national total and territories, convert text to numbers, and pivot from one row per county per measure (long) to one row per county (wide).
+4. **Missingness** (`missingness_report`, `drop_incomplete`): report how many values are missing and where, then use complete cases. One county, Loving County, Texas (population 43), has all four estimates suppressed by the CDC and is removed.
 5. **Analysis** (`src/analysis.py`): descriptive summaries, least squares with `np.linalg.lstsq`, diagnostics (R², condition number, residual plots), and a case bootstrap for coefficient confidence intervals.
 
 ## Method
@@ -109,12 +109,23 @@ Multiple linear regression of diabetes prevalence on physical inactivity, obesit
 
 ## Results
 
-*To be added after running the notebooks and rendering the report: the physical-inactivity coefficient with its 95% bootstrap confidence interval, R², and a one-sentence answer to the question.*
+Across 2,956 counties in 48 states and DC:
+
+- Holding obesity and smoking fixed, a county with one percentage point more physical inactivity has, on average, **0.35 percentage points** higher diabetes prevalence (95% bootstrap CI 0.34 to 0.36). A 10-point difference in inactivity corresponds to about 3.5 points more diabetes.
+- After accounting for inactivity, the associations with obesity (0.03, CI 0.02 to 0.05) and smoking (0.01, CI −0.02 to 0.04) are small; the smoking interval includes zero.
+- The model explains **R² = 0.77** of the county-to-county variation in diabetes prevalence.
+- Residual plots show mild curvature and unequal variance, so uncertainty is estimated with a case bootstrap (B = 2000); the bootstrap standard errors are larger than the classical ones, especially for smoking.
+
+**Answer:** physical inactivity is strongly associated with county diabetes prevalence, even after accounting for obesity and smoking. See `final_report.html` for the full results.
 
 ## Limitations
 
 - PLACES values are model-based small-area estimates, not direct county counts.
 - The data are ecological: county-level associations do not describe individuals.
-- The design is observational, so the results are associations, not causal effects.
+- The design is observational, so the results are associations, not causal effects; income, age structure, diet and access to care are not in the model.
+- The measures are self-reported, and inactivity counts only leisure-time activity.
+- Residuals show mild curvature and unequal variance, so a straight-line model does not fully capture the relationship.
+- Neighbouring counties are similar, so the bootstrap (which treats counties as independent) likely understates uncertainty.
+- Kentucky and Pennsylvania have no estimates for these measures, so results apply to 48 states + DC.
 
 See the Limitations section of `final_report.qmd` for details.
